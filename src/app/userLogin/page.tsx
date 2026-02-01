@@ -12,7 +12,7 @@ export default function UserLogin() {
   const [formData, setFormData] = useState({ email: "", password: "" }); // state that holds the form username and password
   const [errors, setErrors] = useState<LoginErrors>({}); // track the errors in the login form. no errors = good :)
   const [success, setSuccess] = useState<string | null>(null);
-
+  const [loading, setLoading] = useState(false);
 
   // track and update changes in input
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -46,9 +46,11 @@ export default function UserLogin() {
 
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // prevent default page reload on submit
+
     setSuccess(null); // clear success state
     if (validateLoginForm()) {
       // form is valid
+      setLoading(true);
       const res = await signIn("credentials", {
         email: formData.email, // i'm using email as username, so replace with email
         password: formData.password,
@@ -59,9 +61,11 @@ export default function UserLogin() {
       if (res?.error) {
         setErrors({ general: "Invalid username or password" });
         setSuccess(null);
+        setLoading(false); // stop loading on error
       } else {
+        setLoading(false); // stop loading on success
         console.log("Login success");
-        setSuccess("Login successful! Fetching your trips...")
+        setSuccess("Login successful! Fetching your trips...");
         window.location.href = "/"; // or redirect to another page, home page is fine
       }
     }
@@ -78,9 +82,7 @@ export default function UserLogin() {
           </p>
         )}
 
-        {success && (
-          <p className={styles.login_success_msg}>Success!</p>
-        )}
+        {success && <p className={styles.login_success_msg}>Success!</p>}
 
         <div className={styles.user__input_group}>
           <input
@@ -129,8 +131,8 @@ export default function UserLogin() {
         {/* {Object.keys(errors).length === 0 && (
           <p className={success--msg">Success</p>
         )} */}
-        <button className={styles.login__btn} type="submit">
-          <span></span>LOG IN
+        <button className={styles.login__btn} type="submit" disabled={loading}>
+          {loading ? "Loading..." : "LOG IN"}
         </button>
       </form>
       <p className={styles.register__main}>
